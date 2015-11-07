@@ -1,22 +1,37 @@
-FROM andyfurnival/centos
+FROM andyfurnival/centos:master
 
 MAINTAINER Andy Furnival
 
-RUN apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62
-RUN echo "deb http://nginx.org/packages/mainline/debian/  nginx" >> /etc/apt/sources.list
+RUN yum localinstall -y http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
 
-ENV NGINX_VERSION 1.9.6-1~jessie
+# Install Nginx.
+RUN yum install openssl -y
+RUN yum install --disablerepo="*" --enablerepo=nginx install nginx -y
 
-RUN apt-get update && \
-    apt-get install -y ca-certificates nginx=${NGINX_VERSION} && \
-    rm -rf /var/lib/apt/lists/*
+# We need tar
+RUN yum --disablerepo="*" --enablerepo=base install tar -y
+
+#turn nginx daemon off
+RUN echo "daemon off;" >> /etc/nginx/nginx.conf
+
+RUN yum clean all
 
 # forward request and error logs to docker log collector
 RUN ln -sf /dev/stdout /var/log/nginx/access.log
 RUN ln -sf /dev/stderr /var/log/nginx/error.log
 
-VOLUME ["/var/cache/nginx"]
 
-EXPOSE 80 443
+VOLUME  ["/opt"]
 
-CMD ["nginx", "-g", "daemon off;"]
+RUN mkdir /assets
+WORKDIR /assets
+ADD ./docker-entrypoint.sh /assets/
+ADD ./nginx.static.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+# Set the default command to run when starting the container
+RUN chmod a+x /assets/docker-entrypoint.sh
+ENTRYPOINT ["/assets/docker-entrypoint.sh"]
+
+CMD ["start"]

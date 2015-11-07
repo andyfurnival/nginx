@@ -22,16 +22,9 @@ RUN ln -sf /dev/stderr /var/log/nginx/error.log
 
 
 VOLUME  ["/opt"]
+RUN mkdir /opt/static
 
-RUN mkdir /assets
-WORKDIR /assets
-ADD ./docker-entrypoint.sh /assets/
 ADD ./nginx.static.conf /etc/nginx/conf.d/default.conf
 
+
 EXPOSE 80
-
-# Set the default command to run when starting the container
-RUN chmod a+x /assets/docker-entrypoint.sh
-ENTRYPOINT ["/assets/docker-entrypoint.sh"]
-
-CMD ["start"]

@@ -33,8 +33,8 @@ RUN cd nginx-${NGINX_VERSION} \
   && make install
 
 
-#turn nginx daemon off
-RUN echo "daemon off;" >> /etc/nginx/nginx.conf
+RUN rm /etc/nginx/nginx.conf
+ADD ./nginx.conf /etc/nginx/nginx.conf
 
 RUN yum clean all
 
@@ -42,12 +42,6 @@ RUN yum clean all
 RUN ln -sf /dev/stdout /var/log/nginx/access.log
 RUN ln -sf /dev/stderr /var/log/nginx/error.log
 
-# add management scripts
-ADD startup.sh /startup.sh
-RUN chmod 755 /startup.sh
-ADD restart.sh /restart.sh
-RUN chmod 755 /restart.sh
-
 EXPOSE 80
 
-CMD /startup.sh
+CMD /usr/local/sbin/nginx

@@ -5,14 +5,9 @@ MAINTAINER Andy Furnival
 ENV NGINX_VERSION 1.9.6
 
 # Install Nginx.
-RUN yum install pcre-devel zlib-devel openssl-devel -y
+RUN yum install openssl-devel -y
 
-RUN yum install gcc gcc-c++ kernel-devel make -y
-
-RUN yum install wget -y
-
-# We need tar
-RUN yum --disablerepo="*" --enablerepo=base install tar -y
+RUN yum install gcc gcc-c++ make -y
 
 
 RUN wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
@@ -47,15 +42,11 @@ RUN yum clean all
 RUN ln -sf /dev/stdout /var/log/nginx/access.log
 RUN ln -sf /dev/stderr /var/log/nginx/error.log
 
-# add startup script
+# add management scripts
 ADD startup.sh /startup.sh
 RUN chmod 755 /startup.sh
-
-VOLUME  ["/opt"]
-RUN mkdir /opt/static
-
-ADD ./nginx.static.conf /etc/nginx/conf.d/default.conf
-
+ADD restart.sh /restart.sh
+RUN chmod 755 /restart.sh
 
 EXPOSE 80
 
